@@ -1,5 +1,6 @@
 import MySQLdb
 import os
+from loguru import logger
 from MySQLdb.connections import Connection
 
 
@@ -12,6 +13,7 @@ class MySQLClient:
     def db() -> Connection:
         """ Return the MySQL database connection. Instantiate if necessary. """
         if MySQLClient._db is None:
+            logger.debug('Instantiating MySQL database connection')
             MySQLClient._db = MySQLdb.connect(
                 host=os.getenv('PT_MYSQL_HOST', 'localhost'),
                 port=int(os.getenv('PT_MYSQL_PORT', 3306)),

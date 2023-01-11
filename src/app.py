@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 from lib.ssh.client import SSHClientManager
-from lib.adtran.mutables import RemoteDevice
 from lib.adtran.util import AdtranUtil
 from lib.powercode import EquipmentShapingData, PowercodeAPI
 
@@ -17,15 +16,19 @@ client.execute('enable')
 rd_table = client.execute('show table remote-devices ont', True)
 
 # Parse the remote device list
-remote_devices = AdtranUtil.parse_remote_device_list(rd_table)
+devices = AdtranUtil.parse_remote_device_list(rd_table)
 
 # Build command buffer
-commands: list[str] = []
+commands: list[str] = AdtranUtil.build_command_buffer(equipment, devices)
 
-for device in list[RemoteDevice](remote_devices):
-    client.log.info(f'Remote ID: {device.remote_index}; Serial Number: {device.serial_number}')
-    # TODO: Build command buffer
+client.log.info('Applying shaping configuration to remote device')
 
-# TODO: Apply command buffer to device
+# Execute the command buffer
+result: str = client.execute('\r'.join(commands))
 
+print(result)
+
+client.log.success('Shaping configuration applied successfully!')
+
+# Disconnect from the device
 client.close()

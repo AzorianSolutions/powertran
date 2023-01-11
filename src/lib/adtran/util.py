@@ -2,16 +2,16 @@ import re
 from loguru import logger
 from re import Pattern
 from lib.adtran.mutables import RemoteDevice
+from lib.powercode import EquipmentShapingData
 
 
 class AdtranUtil:
-    """ AdtranUtil Properties """
-    _remote_id_pattern: Pattern = re.compile(r'^[0-9]{1,3}@(?:[0-9]){1,3}/(?:[0-9]){1,3}/(?:[0-9]){1,3}\.?[gpon]{0,4}$')
-    _serial_number_pattern: Pattern = re.compile(r'^(ADTN|UBNT)[a-z0-9]{8}$')
-    _rd_table_columns: list[str] = ['remote_index', 'admin_state', 'operational_state', 'serial_number',
-                                               'fiber_distance', 'ont_power', 'bip8', 'rdi', 'aes']
+    """ A utility class for Adtran devices. """
 
-    """ AdtranUtil Methods """
+    _remote_id_pattern: Pattern = re.compile(r'^[0-9]{1,3}@[0-9]{1,3}/[0-9]{1,3}/[0-9]{1,3}\.?[gpon]{0,4}$')
+    _serial_number_pattern: Pattern = re.compile(r'^(?:ADTN|UBNT)[a-z0-9]{8}$')
+    _rd_table_columns: list[str] = ['remote_index', 'admin_state', 'operational_state', 'serial_number',
+                                    'fiber_distance', 'ont_power', 'bip8', 'rdi', 'aes']
 
     @staticmethod
     def parse_remote_device_list(source: str) -> list[RemoteDevice]:
@@ -50,3 +50,37 @@ class AdtranUtil:
             devices.append(device)
 
         return devices
+
+    @staticmethod
+    def build_command_buffer(equipment: dict[str, EquipmentShapingData], devices: list[RemoteDevice]) -> list[str]:
+        """
+        Build the command buffer to apply shaping configuration to remote devices
+        :param equipment: A dictionary of EquipmentShapingData objects
+        :param devices: A list of RemoteDevice objects
+        """
+        commands: list[str] = ['config t']
+
+        for device in list[RemoteDevice](devices):
+            if device.serial_number not in equipment:
+                logger.warning(f'No equipment shaping data found for {device.serial_number}')
+                continue
+
+            esd: EquipmentShapingData = equipment[device.serial_number]
+            id_parts: list[str] = device.remote_index.split('@')
+            index: int = int(id_parts[0])
+            location: str = id_parts[1]
+
+            logger.debug(f'Remote ID: {device.remote_index}; Serial Number: {device.serial_number}; '
+                         + f'Downstream: {esd.downstream}; Upstream: {esd.upstream}')
+
+            commands.append(f'shaper “interface gpon {index}/0/1@{location} channel 1”')
+            commands.append(f'rate {esd.downstream}')
+            commands.append('exit')
+
+            commands.append(f'shaper “remote-device {index}@{location}_0”')
+            commands.append(f'rate {esd.upstream}')
+            commands.append('exit')
+
+        commands.append('exit')
+
+        return commands
