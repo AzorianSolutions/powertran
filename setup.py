@@ -8,5 +8,6 @@ setup(
         'loguru==0.6.0',
         'ssh-python==1.0.0',
         'paramiko==2.12.0',
+        'mysqlclient==2.1.1',
     ],
 )
