@@ -1,4 +1,4 @@
 .idea
 venv
 __pycache__
-conf/targets.yml
+conf/devices.yml
