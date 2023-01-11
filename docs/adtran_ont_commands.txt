@@ -1,0 +1,45 @@
+CREATING ONT:
+
+config t
+remote-device ont 11@1/2/3.gpon
+description "100518506_283804"
+mac-spoofing-allowed enable
+serial-number "ADTN2014B66B"
+no shutdown
+exit
+exit
+
+CONFIGURING SERVICE:
+
+config t
+interface gigabit-ethernet 11/0/1@1/2/3.gpon
+description "100518506_283804"
+mac limit 8
+no shutdown
+exit
+evc-map "100518506_283804" 1/2
+connect evc "OLT2-DHCP"
+connect uni gigabit-ethernet 11/0/1@1/2/3.gpon
+connect gpon upstream channel 1
+connect qos downstream map-profile "Port1"
+men-pri 0
+men-c-tag-pri 0
+no shutdown
+exit
+shaper "100518506_283804_D" 1/2
+var ethPort = 1;
+var queue = ethPort - 1;
+per remote-device 11@1/2/3.gpon queue 0
+rate 212000
+min-rate 0
+no shutdown
+exit
+shaper "100518506_283804_U" 11@1/2/3.gpon
+per interface gpon 11/0/1@1/2/3.gpon channel 1
+rate 212000
+gpon channel assured-bandwidth 35000
+gpon channel fixed-bandwidth 0
+min-rate 0
+no shutdown
+exit
+exit
