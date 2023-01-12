@@ -1,5 +1,6 @@
 import click
 import os
+import yaml
 import sys
 from config import AppSettings
 
@@ -7,10 +8,20 @@ CONTEXT_SETTINGS = dict(auto_envvar_prefix="PT")
 
 
 class Environment:
+    _app_path: str | None = None
     _settings: AppSettings = None
+    _config: dict[str, any] | None = None
 
     def __init__(self):
-        self.project_path = os.getcwd()
+        self._app_path = os.getcwd()
+
+    @property
+    def app_path(self) -> str | None:
+        return self._app_path
+
+    @app_path.setter
+    def app_path(self, value: str):
+        self._app_path = value
 
     @property
     def debug(self) -> bool:
@@ -25,11 +36,15 @@ class Environment:
     def settings(self) -> AppSettings:
         return self._settings
 
+    @property
+    def config(self) -> dict[str, any]:
+        return self._config
+
     def load_settings(self, env_file: str, env_file_encoding: str, secrets_dir: str | None) -> AppSettings:
         """ Loads the app's settings from the given environment file and secrets directory. """
 
         if not env_file.startswith('/'):
-            env_file = os.path.join(self.project_path, env_file)
+            env_file = os.path.join(self.app_path, env_file)
 
         params: dict = {
             '_env_file': env_file,
@@ -41,7 +56,7 @@ class Environment:
 
         if secrets_dir is not None:
             valid: bool = True
-            secrets_path: str = secrets_dir if secrets_dir.startswith('/') else os.path.join(self.project_path,
+            secrets_path: str = secrets_dir if secrets_dir.startswith('/') else os.path.join(self.app_path,
                                                                                              secrets_dir)
 
             if not os.path.exists(secrets_path):
@@ -58,6 +73,30 @@ class Environment:
         self._settings: AppSettings = AppSettings(**params)
 
         return self._settings
+
+    def load_config(self):
+        """ Loads the app's configuration from the given configuration file. """
+
+        if self._settings is None:
+            raise Exception('The app settings have not been loaded yet.')
+
+        if self._config is not None:
+            return self._config
+
+        config_path: str = self._settings.config
+
+        if not config_path.startswith('/'):
+            config_path = os.path.join(self.app_path, config_path)
+
+        if not os.path.exists(config_path):
+            raise Exception(f'The given path for the configuration file does not exist: {config_path}')
+
+        if not os.path.isfile(config_path):
+            raise Exception(f'The given path for the configuration file is not a file: {config_path}')
+
+        with open(config_path, 'r') as f:
+            self._config = yaml.load(f, Loader=yaml.FullLoader)
+            f.close()
 
     @staticmethod
     def log(msg, *args):
@@ -100,9 +139,9 @@ class AsCli(click.MultiCommand):
 @click.version_option()
 @click.option(
     '-p',
-    '--project-path',
+    '--app-path',
     type=click.Path(exists=True, file_okay=False, resolve_path=True),
-    help="Changes the project's root path.",
+    help="Changes the app's root path.",
 )
 @click.option("-v", "--verbose", is_flag=True, default=None, help="Increases verbosity of the application.")
 @click.option('-e', '--env-file', default='.env', type=str,
@@ -112,17 +151,20 @@ class AsCli(click.MultiCommand):
 @click.option('-s', '--secrets-dir', default=None, type=str,
               help='The path to a directory containing environment variable secret files.')
 @pass_environment
-def cli(ctx: Environment, verbose: bool | None, project_path, env_file: str, env_file_encoding: str,
+def cli(ctx: Environment, verbose: bool | None, app_path: str | None, env_file: str, env_file_encoding: str,
         secrets_dir: str | None):
-    """A CLI to consume Powertran's execution and management functions."""
+    """A CLI to consume the app's execution and management functions."""
 
     # Configure the debug setting of the application if the "--verbose" option is set.
     if isinstance(verbose, bool):
         ctx.debug = verbose
 
-    # Cache a reference to the project's root path
-    if project_path is not None:
-        ctx.project_path = project_path
+    # Cache a reference to the app's root path
+    if app_path is not None:
+        ctx.app_path = app_path
 
     # Load the app's settings based on the given options.
     ctx.load_settings(env_file, env_file_encoding, secrets_dir)
+
+    # Load the app's configuration based on the given settings.
+    ctx.load_config()

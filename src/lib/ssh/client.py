@@ -1,4 +1,5 @@
 import os
+import time
 from loguru import logger
 from paramiko import AutoAddPolicy, Channel, SSHClient, Transport
 from paramiko.ssh_exception import AuthenticationException
@@ -13,6 +14,7 @@ class SSHClientManager:
     _client: SSHClient | None = None
     _channel: Channel | None = None
     _host: str | None = None
+    _port: int | None = None
     _username: str | None = None
     _password: str | None = None
     _known_hosts: str = os.getenv('PT_KNOWN_HOSTS', '~/.ssh/known_hosts')
@@ -30,27 +32,26 @@ class SSHClientManager:
 
         return self._channel
 
-    def __init__(self, auto_connect: bool = False, debug: bool | None = None, host: str | None = None,
-                 username: str | None = None, password: str | None = None, known_hosts: str | None = None):
+    def __init__(self, host: str | None = None, port: int | None = None, username: str | None = None,
+                 password: str | None = None, auto_connect: bool = False, known_hosts: str | None = None):
         """ Initialize the SSH client manager """
+
         Transport._preferred_keys = ('ssh-rsa',)
         Transport._preferred_pubkeys = ('ssh-rsa',)
         Transport._preferred_kex = ('diffie-hellman-group14-sha1', 'diffie-hellman-group1-sha1',)
         Transport._preferred_ciphers = ('aes128-cbc',)
 
-        self._debug = os.getenv('PT_DEBUG', False)
+        if isinstance(host, str):
+            self._host = host
 
-        if isinstance(debug, bool):
-            self._debug = debug
+        if isinstance(port, int):
+            self._port = port
 
-        if host is None:
-            self._host = os.getenv('PT_HOST', '192.168.1.1')
+        if isinstance(username, str):
+            self._username = username
 
-        if username is None:
-            self._username = os.getenv('PT_USERNAME', 'ADMIN')
-
-        if password is None:
-            self._password = os.getenv('PT_PASSWORD')
+        if isinstance(password, str):
+            self._password = password
 
         if known_hosts is None:
             self._known_hosts = os.getenv('PT_KNOWN_HOSTS', '~/.ssh/known_hosts')
@@ -106,13 +107,15 @@ class SSHClientManager:
             # Wait for the command to complete and capture output
             result: str = self.get_buffer(process_more)
 
+            # TODO: Remove the following after development
+            print(result)
+
             stdout += result
 
         return stdout
 
     def get_buffer(self, process_more: bool = False) -> str:
-        import time
-
+        """ Get the output buffer from the SSH server """
         stdout: str = ''
 
         while not self.channel.recv_ready():

@@ -8,17 +8,25 @@ from lib.ssh.client import SSHClientManager
 class AdtranAPI:
     """ A class for interacting with Adtran devices. """
 
+    _device: dict[str, any] | None = None
     _client: SSHClientManager = None
+    _client_conf: dict[str, any] | None = None
 
-    def __init__(self, auto_connect: bool = True):
+    def __init__(self, device: dict[str, any] | None = None, auto_connect: bool = True):
         """ Initialize the AdtranAPI object. """
+
+        if isinstance(device, dict):
+            self._device = device
+            self._client_conf = {key: value for key, value in self._device.items() if
+                                 key in ['host', 'port', 'username', 'password']}
+
         if auto_connect:
             self.open()
 
     def open(self):
         """ Open an SSH connection to the device. """
         if not isinstance(self._client, SSHClientManager):
-            self._client = SSHClientManager(auto_connect=True)
+            self._client = SSHClientManager(**self._client_conf, auto_connect=True)
 
     def close(self):
         """ Close the SSH connection to the device. """

@@ -14,6 +14,7 @@ setup(
         'paramiko==2.12.0',
         'netmiko==4.1.2',
         'mysqlclient==2.1.1',
+        'pyaml==21.10.1',
     ],
     entry_points={
         'console_scripts': [
