@@ -10,6 +10,13 @@ If set to `True`, Powertran will log debug messages to the console. This is usef
 
 The salt used to encrypt the device passwords. This should be a random string of characters.
 
+> **NOTICE !!!**
+
+To make it easy to generate the right type of salt, you can use the following command once the app's environment
+has been activated:
+
+> powertran gen_salt
+
 #### PT_MYSQL_HOST (str)
 
 The IP address or hostname of the MySQL server.
@@ -44,6 +51,8 @@ The path to the known hosts file. If not specified, the default path of `~/.ssh/
 The application's YAML configuration is fairly straightforward. It contains a simple list of objects that represent each
 Adtran device to be synchronized.
 
+### Device Properties
+
 Each object contains the following properties:
 
 #### name (str)
@@ -66,6 +75,13 @@ The username to use when connecting to the device.
 
 The password to use when connecting to the device.
 
+> **NOTICE !!!**
+
+Device passwords are not stored in plain text and must be encrypted with the app's salt. The easiest way to do this is
+to run the following command once the app's environment has been activated:
+
+> powertran add_device [OPTIONS] NAME HOST USERNAME PLAIN-TEXT-PASSWORD ENABLED
+
 #### enabled (bool)
 
 If set to `False`, the device will be ignored by the application. This is useful for temporarily disabling a device.
@@ -79,12 +95,12 @@ devices:
   - name: ADTRAN-DEVICE-1
     host: 1.2.3.4
     username: ADMIN
-    password: PASSWORD-HERE
+    password: ENCRYPTED-PASSWORD-HERE
     enabled: true
   - name: ADTRAN-DEVICE-2
     host: 4.3.2.1
     port: 1022
     username: ADMIN
-    password: PASSWORD-HERE
+    password: ENCRYPTED-PASSWORD-HERE
     enabled: false
 ```

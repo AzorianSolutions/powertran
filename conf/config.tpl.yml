@@ -2,11 +2,11 @@ devices:
   - name: TEST-DEV-1
     host: 1.2.3.4
     username: ADMIN
-    password: PASSWORD-HERE
+    password: ENCRYPTED-PASSWORD-HERE
     enabled: true
   - name: TEST-DEV-2
     host: 4.3.2.1
     port: 1022
     username: ADMIN
-    password: PASSWORD-HERE
+    password: ENCRYPTED-PASSWORD-HERE
     enabled: false
