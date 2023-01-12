@@ -30,3 +30,10 @@ source venv/bin/active
 
 powertran sync
 ```
+
+> **NOTICE !!!!**
+
+If you want to perform a test run to verify information before applying configuration changes to the devices,
+provide the `-d` or `--dry-run` flag to the `powertran sync` command as follows:
+
+> powertran sync -d
