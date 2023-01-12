@@ -12,6 +12,7 @@ setup(
         'pydantic==1.10.4',
         'ssh-python==1.0.0',
         'paramiko==2.12.0',
+        'netmiko==4.1.2',
         'mysqlclient==2.1.1',
     ],
     entry_points={

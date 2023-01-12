@@ -73,7 +73,7 @@ class AdtranUtil:
             logger.debug(f'Remote ID: {device.remote_index}; Serial Number: {device.serial_number}; '
                          + f'Downstream: {esd.downstream}; Upstream: {esd.upstream}')
 
-            commands.append(f'shaper “interface gpon {index}/0/1@{location} channel 1” 1/1')
+            commands.append(f'shaper “interface gpon {index}/0/1@{location} channel 1” 1/2')
             commands.append(f'rate {esd.downstream}')
             commands.append('exit')
 

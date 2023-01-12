@@ -19,7 +19,13 @@ class AdtranAPI:
 
         if dry_run:
             logger.debug(f'Dry run mode, not sending commands to device.')
-            print(commands)
+
+            if isinstance(commands, str):
+                commands = [commands]
+
+            for command in commands:
+                print(command)
+
             return ''
 
         return self._client.execute(commands)

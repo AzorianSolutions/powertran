@@ -1,6 +1,6 @@
+import click
 import os
 import sys
-import click
 from config import AppSettings
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix="PT")
@@ -10,8 +10,16 @@ class Environment:
     _settings: AppSettings = None
 
     def __init__(self):
-        self.verbose = False
         self.project_path = os.getcwd()
+
+    @property
+    def debug(self) -> bool:
+        return self._settings.debug if isinstance(self._settings, AppSettings) else False
+
+    @debug.setter
+    def debug(self, value: bool):
+        if isinstance(self._settings, AppSettings):
+            self._settings.debug = value
 
     @property
     def settings(self) -> AppSettings:
@@ -60,7 +68,7 @@ class Environment:
 
     def vlog(self, msg, *args):
         """Logs a message to stderr only if verbose is enabled."""
-        if self.verbose:
+        if self.debug:
             self.log(msg, *args)
 
 
@@ -96,7 +104,7 @@ class AsCli(click.MultiCommand):
     type=click.Path(exists=True, file_okay=False, resolve_path=True),
     help="Changes the project's root path.",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Increases verbosity of the application.")
+@click.option("-v", "--verbose", is_flag=True, default=None, help="Increases verbosity of the application.")
 @click.option('-e', '--env-file', default='.env', type=str,
               help='The path to an .env file to load command settings from.')
 @click.option('--env-file-encoding', default='UTF-8', type=str,
@@ -104,11 +112,13 @@ class AsCli(click.MultiCommand):
 @click.option('-s', '--secrets-dir', default=None, type=str,
               help='The path to a directory containing environment variable secret files.')
 @pass_environment
-def cli(ctx: Environment, verbose, project_path, env_file: str, env_file_encoding: str, secrets_dir: str | None):
+def cli(ctx: Environment, verbose: bool | None, project_path, env_file: str, env_file_encoding: str,
+        secrets_dir: str | None):
     """A CLI to consume Powertran's execution and management functions."""
 
-    # Cache a reference to the verbose flag.
-    ctx.verbose = verbose
+    # Configure the debug setting of the application if the "--verbose" option is set.
+    if isinstance(verbose, bool):
+        ctx.debug = verbose
 
     # Cache a reference to the project's root path
     if project_path is not None:

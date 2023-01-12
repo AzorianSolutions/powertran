@@ -85,29 +85,32 @@ class SSHClientManager:
     def execute(self, commands: str | list[str], process_more: bool = True) -> str:
         """ Execute one or more commands on the SSH server """
 
-        # Wait until the channel is ready to send data
-        while not self.channel.send_ready():
-            pass
-
         logger.debug(f'Sending command' + ('s' if isinstance(commands, list) else '') + f' to {self._host}')
 
-        # if isinstance(commands, list):
-        #     commands = '\n'.join(commands)
-
-        # Send the command(s)
-        # self.channel.send(f'{commands}\r'.encode('utf-8'))
-
         if isinstance(commands, str):
-            self.channel.send(f'{commands}\r'.encode('utf-8'))
+            commands = [commands]
 
-        if isinstance(commands, list):
-            for command in commands:
-                self.channel.send(f'{command}\n'.encode('utf-8'))
+        stdout: str = ''
 
-        logger.debug('Receiving command output')
+        # Execute each command one at a time and collect the output buffer before executing the next command
+        for command in commands:
+            # Wait until the channel is ready to send data
+            while not self.channel.send_ready():
+                pass
 
-        # Wait until the channel is ready to receive data and then return the buffer
-        return self.get_buffer(process_more)
+            logger.debug(f'Sending command: {command}')
+
+            # Send the command
+            self.channel.send(f'{command}\r'.encode('utf-8'))
+
+            # Wait for the command to complete and capture output
+            result: str = self.get_buffer(process_more)
+
+            print(result)
+
+            stdout += result
+
+        return stdout
 
     def get_buffer(self, process_more: bool = False) -> str:
         import time
