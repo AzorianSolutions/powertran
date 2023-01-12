@@ -17,3 +17,7 @@ source bin/setup-environment.sh
 
 powertran
 ```
+
+## Powertran Configuration
+
+For the most in-depth configuration instructions, see the [Configuration](docs/configuration.md) guide.
