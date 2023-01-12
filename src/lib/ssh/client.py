@@ -25,14 +25,10 @@ class SSHClientManager:
             raise ShellClientManagerException('SSH client is not instantiated')
 
         if not isinstance(self._channel, Channel):
-            self.log.debug('Opening SSH channel')
+            logger.debug('Opening SSH channel')
             self._channel = self._client.invoke_shell(width=800, height=600)
 
         return self._channel
-
-    @property
-    def log(self) -> logger:
-        return logger
 
     def __init__(self, auto_connect: bool = False, debug: bool | None = None, host: str | None = None,
                  username: str | None = None, password: str | None = None, known_hosts: str | None = None):
@@ -58,9 +54,7 @@ class SSHClientManager:
 
         if known_hosts is None:
             self._known_hosts = os.getenv('PT_KNOWN_HOSTS', '~/.ssh/known_hosts')
-
-        # TODO: Configure loguru based on debug setting
-
+        
         self._client = SSHClient()
         self._client.set_missing_host_key_policy(AutoAddPolicy())
         self._client.load_system_host_keys()
@@ -74,33 +68,43 @@ class SSHClientManager:
     def connect(self) -> bool:
         """ Connect to the SSH server """
 
-        self.log.debug(f'Connecting to {self._host} as {self._username}...')
+        logger.debug(f'Connecting to {self._host} as {self._username}...')
 
         try:
             self._client.connect(self._host, username=self._username, password=self._password)
             return True
         except AuthenticationException as e:
-            self.log.critical(f'SSH Authentication Failed: {e}')
+            logger.critical(f'SSH Authentication Failed: {e}')
             return False
 
     def close(self) -> None:
         """ Close the SSH connection """
-        self.log.debug('Closing SSH connection')
+        logger.debug('Closing SSH connection')
         self._client.close()
 
-    def execute(self, command: str, process_more: bool = False) -> str:
-        """ Execute a command on the SSH server """
+    def execute(self, commands: str | list[str], process_more: bool = True) -> str:
+        """ Execute one or more commands on the SSH server """
 
         # Wait until the channel is ready to send data
         while not self.channel.send_ready():
             pass
 
-        self.log.debug(f'Sending command: {command}')
+        logger.debug(f'Sending command' + ('s' if isinstance(commands, list) else '') + f' to {self._host}')
 
-        # Send the command
-        self.channel.send(f'{command}\r'.encode('utf-8'))
+        # if isinstance(commands, list):
+        #     commands = '\n'.join(commands)
 
-        self.log.debug('Receiving command output')
+        # Send the command(s)
+        # self.channel.send(f'{commands}\r'.encode('utf-8'))
+
+        if isinstance(commands, str):
+            self.channel.send(f'{commands}\r'.encode('utf-8'))
+
+        if isinstance(commands, list):
+            for command in commands:
+                self.channel.send(f'{command}\n'.encode('utf-8'))
+
+        logger.debug('Receiving command output')
 
         # Wait until the channel is ready to receive data and then return the buffer
         return self.get_buffer(process_more)
@@ -115,7 +119,7 @@ class SSHClientManager:
 
         while True:
             if self.channel.recv_ready():
-                stdout += self.channel.recv(9999).decode('utf-8')
+                stdout += self.channel.recv(65535).decode('utf-8')
                 if process_more:
                     if stdout.splitlines()[-1].upper() == '--MORE--':
                         self.channel.send(' '.encode('utf-8'))
