@@ -16,11 +16,12 @@ The IP address or hostname of the MySQL server.
 
 #### PT_MYSQL_PORT (int)
 
-The port number of the MySQL server. If not specified, the default port number of 3306 will be used.
+The port number of the MySQL server. If not specified, the default port number of `3306` will be used.
 
 #### PT_MYSQL_USER (str)
 
-The username of the MySQL user that has access to the Powercode database.
+The username of the MySQL user that has access to the Powercode database. If not specified, the default username
+of `root` will be used.
 
 #### PT_MYSQL_PASSWORD (str)
 
@@ -53,6 +54,10 @@ The name of the device. This is used to identify the device in the application's
 
 The IP address or hostname of the device.
 
+#### port (int)
+
+The port to use when connecting to the device. If not specified, the default SSH port (22) will be used.
+
 #### username (str)
 
 The username to use when connecting to the device.
@@ -61,9 +66,9 @@ The username to use when connecting to the device.
 
 The password to use when connecting to the device.
 
-#### port (int)
+#### enabled (bool)
 
-The port to use when connecting to the device. If not specified, the default SSH port (22) will be used.
+If set to `False`, the device will be ignored by the application. This is useful for temporarily disabling a device.
 
 ### Example
 
