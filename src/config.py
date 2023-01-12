@@ -3,7 +3,7 @@ from pydantic import BaseSettings
 
 class AppSettings(BaseSettings):
     debug: bool = False
-    salt: str = 'INSECURE-CHANGE-ME-;Qj^J`1i?"WuOD%Z;X-M0^CGUI>moX>twda:a=9@!=F|'
+    salt: str = 'WXQVPexFCGZmKfHkFjiW0lhrAC2XJ8K8Gm7wK9HYGxE='
     mysql_host: str = 'localhost'
     mysql_user: str = 'root'
     mysql_password: str = ''

@@ -2,6 +2,7 @@ import click
 import os
 import yaml
 import sys
+from cryptography.fernet import Fernet
 from config import AppSettings
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix="PT")
@@ -11,6 +12,7 @@ class Environment:
     _app_path: str | None = None
     _settings: AppSettings = None
     _config: dict[str, any] | None = None
+    _fernet: Fernet | None = None
 
     def __init__(self):
         self._app_path = os.getcwd()
@@ -39,6 +41,13 @@ class Environment:
     @property
     def config(self) -> dict[str, any]:
         return self._config
+
+    @property
+    def fernet(self) -> Fernet:
+        if self._fernet is None:
+            self._fernet = Fernet(self._settings.salt)
+
+        return self._fernet
 
     def load_settings(self, env_file: str, env_file_encoding: str, secrets_dir: str | None) -> AppSettings:
         """ Loads the app's settings from the given environment file and secrets directory. """
@@ -97,6 +106,23 @@ class Environment:
         with open(config_path, 'r') as f:
             self._config = yaml.load(f, Loader=yaml.FullLoader)
             f.close()
+
+    def save_config(self, config: dict[str, any]) -> bool:
+        """ Saves the app's configuration to the given configuration file. """
+
+        if self._settings is None:
+            raise Exception('The app settings have not been loaded yet.')
+
+        config_path: str = self._settings.config
+
+        if not config_path.startswith('/'):
+            config_path = os.path.join(self.app_path, config_path)
+
+        with open(config_path, 'w') as f:
+            yaml.dump(config, f)
+            f.close()
+
+        return True
 
     @staticmethod
     def log(msg, *args):
