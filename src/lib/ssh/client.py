@@ -1,6 +1,6 @@
 import os
 from loguru import logger
-from paramiko import AutoAddPolicy, Channel, ChannelException, SSHClient, Transport
+from paramiko import AutoAddPolicy, Channel, SSHClient, Transport
 from paramiko.ssh_exception import AuthenticationException
 
 
@@ -54,7 +54,7 @@ class SSHClientManager:
 
         if known_hosts is None:
             self._known_hosts = os.getenv('PT_KNOWN_HOSTS', '~/.ssh/known_hosts')
-        
+
         self._client = SSHClient()
         self._client.set_missing_host_key_policy(AutoAddPolicy())
         self._client.load_system_host_keys()
@@ -105,8 +105,6 @@ class SSHClientManager:
 
             # Wait for the command to complete and capture output
             result: str = self.get_buffer(process_more)
-
-            print(result)
 
             stdout += result
 

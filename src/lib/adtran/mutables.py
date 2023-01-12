@@ -12,3 +12,11 @@ class RemoteDevice(Mutable):
     _bip8: str | None = None
     _rdi: str | None = None
     _aes: str | None = None
+
+    @property
+    def serial_number(self) -> str | None:
+        return self._serial_number.upper() if self._serial_number else None
+
+    @serial_number.setter
+    def serial_number(self, value: str | None):
+        self._serial_number = value
