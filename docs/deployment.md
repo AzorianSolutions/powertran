@@ -6,6 +6,8 @@ Deploying Powertran is a fairly simple process. Execute the following commands f
 supports Python 3.10 or higher.
 
 ```
+cd /opt
+
 git clone https://github.com/AzorianSolutions/powertran.git
 
 cd powertran
@@ -37,3 +39,50 @@ If you want to perform a test run to verify information before applying configur
 provide the `-d` or `--dry-run` flag to the `powertran sync` command as follows:
 
 > powertran sync -d
+
+### CRON Job Example
+
+There are many ways to set up an environment to run this application under CRON. This is just one basic example that
+you can work off of. This approach assumes you installed Powertran to `/opt/powertran`. Start by running the following command:
+
+```
+sudo tee /root/powertran-sync.sh &> /dev/null <<EOF
+#!/usr/bin/env bash
+cd /opt/powertran
+source venv/bin/activate
+powertran sync > /root/powertran.log 2>&1
+EOF
+
+sudo tee /root/powertran.yml &> /dev/null <<EOF
+threading:
+  pool_size: 10
+devices:
+EOF
+```
+
+Now you need to edit the following command block so that the environment variables are set correctly
+for your environment.
+
+```
+read -r -d '' PT_CRON <<'EOF'
+PT_SALT="YOUR-APP-GENERATED-SALT-HERE"
+PT_CONFIG=/root/powertran.yml
+PT_MYSQL_HOST=192.168.1.1
+PT_MYSQL_USER=powertran
+PT_MYSQL_PASSWORD=MYSQL-PASSWORD-HERE
+PT_MYSQL_DATABASE=POWERCODE-DATABASE-NAME
+*/30 * * * * /usr/bin/env bash /root/powertran-sync.sh
+EOF
+
+(crontab -l && echo "$PT_CRON") | crontab -
+```
+
+> **NOTICE!!!**
+
+You need to set an appropriate salt for the `PT_SALT` environment variable.
+You can generate a salt by running the `powertran gen_salt` command once the environment has been activated
+using the steps at the beginning of this guide.
+
+Once you have edited the above command block, run it from a terminal. This will set up the CRON job to run
+every 30 minutes. You may need to tweak this to be permissive of the time it takes to complete an entire cycle
+in your environment.
