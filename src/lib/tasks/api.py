@@ -96,7 +96,7 @@ class TaskAPI:
         pool.starmap(self.queue_worker, self._command_sets)
 
         msg: str = f'Finished shaping configuration synchronization ' + ('dry run' if self.dry_run else 'task') \
-                   + ' for {len(self._command_sets)} devices.'
+                   + f' for {len(self._command_sets)} devices.'
 
         logger.info(msg)
 
