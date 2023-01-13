@@ -28,7 +28,7 @@ class SSHClientManager:
 
         if not isinstance(self._channel, Channel):
             logger.debug('Opening SSH channel')
-            self._channel = self._client.invoke_shell(width=800, height=600)
+            self._channel = self._client.invoke_shell()
 
         return self._channel
 
@@ -99,18 +99,16 @@ class SSHClientManager:
             while not self.channel.send_ready():
                 pass
 
-            logger.debug(f'Sending command: {command}')
+            # Encode the command
+            encoded_command: bytes = f'{command}\n'.encode('utf-8')
+
+            logger.debug(f'Sending {len(encoded_command)} byte command: {command}')
 
             # Send the command
-            self.channel.send(f'{command}\r'.encode('utf-8'))
+            self.channel.send(encoded_command)
 
             # Wait for the command to complete and capture output
-            result: str = self.get_buffer(process_more)
-
-            # TODO: Remove the following after development
-            print(result)
-
-            stdout += result
+            stdout += self.get_buffer(process_more)
 
         return stdout
 

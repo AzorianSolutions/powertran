@@ -17,4 +17,7 @@ def cli(ctx: Environment, dryrun: bool):
     # Start a synchronization task for each device
     TaskAPI.run_sync_task(ctx, equipment, dryrun)
 
-    logger.success('Shaping configuration applied successfully!')
+    if dryrun:
+        logger.success('Shaping configuration successfully generated!')
+    else:
+        logger.success('Shaping configuration applied successfully!')
