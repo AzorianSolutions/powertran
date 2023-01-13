@@ -95,7 +95,10 @@ class TaskAPI:
         pool = Pool(threads)
         pool.starmap(self.queue_worker, self._command_sets)
 
-        logger.info(f'Finished shaping configuration synchronization task for {len(self._command_sets)} devices.')
+        msg: str = f'Finished shaping configuration synchronization ' + ('dry run' if self.dry_run else 'task') \
+                   + ' for {len(self._command_sets)} devices.'
+
+        logger.info(msg)
 
         return True
 
@@ -122,8 +125,9 @@ class TaskAPI:
             for device in self.ctx.devices:
                 if device.host not in self._apis:
                     time.sleep(random.randint(3, 10))
-                    self._apis[device.host] = AdtranAPI(device)
-                    self._apis[device.host].execute(['enable', 'config t'])
+                    self._apis[device.host] = AdtranAPI(device, auto_connect=True if not self.dry_run else False)
+                    if not self.dry_run:
+                        self._apis[device.host].execute(['enable', 'config t'])
 
         # Update the shaping configuration on the Adtran device
         self._apis[host].execute(command_set, self.dry_run)

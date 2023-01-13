@@ -74,7 +74,7 @@ class SSHClientManager:
         logger.debug(f'Connecting to {self._host} as {self._username}...')
 
         try:
-            self._client.connect(self._host, username=self._username, password=self._password)
+            self._client.connect(self._host, username=self._username, password=self._password, banner_timeout=60)
             return True
         except AuthenticationException as e:
             logger.critical(f'SSH Authentication Failed: {e}')
