@@ -45,7 +45,7 @@ provide the `-d` or `--dry-run` flag to the `powertran sync` command as follows:
 There are many ways to set up an environment to run this application under CRON. This is just one basic example that
 you can work off of. This approach assumes you installed Powertran to `/opt/powertran`.
 
-Start by running the following command:
+Start by running the following commands:
 
 ```
 sudo tee /root/powertran-sync.sh &> /dev/null <<EOF
