@@ -51,6 +51,12 @@ The path to the known hosts file. If not specified, the default path of `~/.ssh/
 The application's YAML configuration is fairly straightforward. It contains a simple list of objects that represent each
 Adtran device to be synchronized.
 
+### Threading Options
+
+#### pool_size (int)
+
+The number of threads to use when synchronizing devices.
+
 ### Device Properties
 
 Each object contains the following properties:
@@ -91,6 +97,8 @@ If set to `False`, the device will be ignored by the application. This is useful
 The following is an example of a valid YAML configuration:
 
 ```
+threading:
+  pool_size: 10
 devices:
   - name: ADTRAN-DEVICE-1
     host: 1.2.3.4
