@@ -1,4 +1,5 @@
 from loguru import logger
+from lib.adtran.mutables import RemoteDevice
 from lib.cli.app import Environment
 from lib.powercode import EquipmentShapingData
 from lib.tasks.sync import ShapingConfigTask
@@ -8,6 +9,7 @@ class TaskAPI:
     _tasks: dict[str, list[ShapingConfigTask]] = {
         'sync': [],
     }
+    _remote_devices: dict[str, list[RemoteDevice]] = {}
 
     @staticmethod
     def run_sync_task(ctx: Environment, equipment: dict[str, EquipmentShapingData],
@@ -15,15 +17,15 @@ class TaskAPI:
         """ Runs the shaping configuration synchronization task. """
 
         # Instantiate a task for each configured Adtran device and start the task
-        for device in ctx.config['devices']:
-
+        for device in ctx.devices:
             # Skip disabled devices
-            if not device['enabled']:
-                logger.debug(f"Skipping device '{device['name']}' because it is disabled.")
+            if not device.enabled:
+                logger.debug(f"Skipping device '{device.name}' because it is disabled.")
                 continue
 
-            logger.debug('Starting shaping configuration synchronization task for device: ' + device['name'])
-            
+            logger.debug('Starting shaping configuration synchronization task for device: '
+                         + device.name if isinstance(device.name, str) else device.host)
+
             # Instantiate a task for the device
             task: ShapingConfigTask = ShapingConfigTask()
             task.ctx = ctx

@@ -4,6 +4,7 @@ import yaml
 import sys
 from cryptography.fernet import Fernet
 from config import AppSettings
+from lib.mutables import Device
 
 CONTEXT_SETTINGS = dict(auto_envvar_prefix="PT")
 
@@ -13,37 +14,60 @@ class Environment:
     _settings: AppSettings = None
     _config: dict[str, any] | None = None
     _fernet: Fernet | None = None
+    _devices: list[Device] | None = None
 
     def __init__(self):
+        """ Initializes the environment. """
         self._app_path = os.getcwd()
 
     @property
     def app_path(self) -> str | None:
+        """ Returns the path to the app's root directory. """
         return self._app_path
 
     @app_path.setter
     def app_path(self, value: str):
+        """ Sets the app's path. """
         self._app_path = value
 
     @property
     def debug(self) -> bool:
+        """ Returns whether debug mode is enabled. """
         return self._settings.debug if isinstance(self._settings, AppSettings) else False
 
     @debug.setter
     def debug(self, value: bool):
+        """ Sets the debug mode. """
         if isinstance(self._settings, AppSettings):
             self._settings.debug = value
 
     @property
     def settings(self) -> AppSettings:
+        """ Returns the app's settings. """
         return self._settings
 
     @property
     def config(self) -> dict[str, any]:
+        """ Returns the app's configuration. """
         return self._config
 
     @property
+    def devices(self) -> list[Device] | None:
+        """ Returns the list of devices. """
+
+        if not isinstance(self._config, dict):
+            return None
+
+        if not isinstance(self._devices, list):
+            self._devices = []
+            for device in self._config['devices']:
+                self._devices.append(Device(**device))
+
+        return self._devices
+
+    @property
     def fernet(self) -> Fernet:
+        """ Returns the Fernet instance. """
         if self._fernet is None:
             self._fernet = Fernet(self._settings.salt)
 

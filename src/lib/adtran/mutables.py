@@ -2,7 +2,7 @@ from lib.mutables import Mutable
 
 
 class RemoteDevice(Mutable):
-    """ RemoteDevice Properties """
+    """ Represents a remote device connected to a managed device. """
     _remote_index: str | None = None
     _admin_state: str | None = None
     _operational_state: str | None = None

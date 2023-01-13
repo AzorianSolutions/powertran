@@ -17,7 +17,9 @@ class SSHClientManager:
     _port: int | None = None
     _username: str | None = None
     _password: str | None = None
-    _known_hosts: str = os.getenv('PT_KNOWN_HOSTS', '~/.ssh/known_hosts')
+    _known_hosts: str | None = None
+    _receive_delay: float = 0.1
+    _receive_wait_delay: float = 0.1
 
     @property
     def channel(self) -> Channel:
@@ -125,10 +127,10 @@ class SSHClientManager:
                 if process_more:
                     if stdout.splitlines()[-1].upper() == '--MORE--':
                         self.channel.send(' '.encode('utf-8'))
-                        time.sleep(0.5)
+                        time.sleep(self._receive_delay)
                         continue
             else:
-                time.sleep(0.5)
+                time.sleep(self._receive_wait_delay)
                 if not self.channel.recv_ready():
                     break
 

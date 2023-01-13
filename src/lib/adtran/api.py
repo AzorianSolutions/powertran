@@ -1,6 +1,7 @@
 from loguru import logger
 from lib.adtran.mutables import RemoteDevice
 from lib.adtran.util import AdtranUtil
+from lib.mutables import Device
 from lib.powercode import EquipmentShapingData
 from lib.ssh.client import SSHClientManager
 
@@ -8,16 +9,16 @@ from lib.ssh.client import SSHClientManager
 class AdtranAPI:
     """ A class for interacting with Adtran devices. """
 
-    _device: dict[str, any] | None = None
+    _device: Device | None = None
     _client: SSHClientManager = None
     _client_conf: dict[str, any] | None = None
 
-    def __init__(self, device: dict[str, any] | None = None, auto_connect: bool = True):
+    def __init__(self, device: Device | None = None, auto_connect: bool = True):
         """ Initialize the AdtranAPI object. """
 
-        if isinstance(device, dict):
+        if isinstance(device, Device):
             self._device = device
-            self._client_conf = {key: value for key, value in self._device.items() if
+            self._client_conf = {key: value for key, value in self._device.__dict__.items() if
                                  key in ['host', 'port', 'username', 'password']}
 
         if auto_connect:
