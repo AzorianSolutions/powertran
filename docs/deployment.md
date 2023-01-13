@@ -40,10 +40,12 @@ provide the `-d` or `--dry-run` flag to the `powertran sync` command as follows:
 
 > powertran sync -d
 
-### CRON Job Example
+## CRON Setup
 
 There are many ways to set up an environment to run this application under CRON. This is just one basic example that
-you can work off of. This approach assumes you installed Powertran to `/opt/powertran`. Start by running the following command:
+you can work off of. This approach assumes you installed Powertran to `/opt/powertran`.
+
+Start by running the following command:
 
 ```
 sudo tee /root/powertran-sync.sh &> /dev/null <<EOF
@@ -67,8 +69,8 @@ for your environment.
 read -r -d '' PT_CRON <<'EOF'
 PT_SALT="YOUR-APP-GENERATED-SALT-HERE"
 PT_CONFIG=/root/powertran.yml
-PT_MYSQL_HOST=192.168.1.1
-PT_MYSQL_USER=powertran
+PT_MYSQL_HOST=YOUR-POWERCODE-DATABASE-HOST-HERE
+PT_MYSQL_USER=YOUR-POWERCODE-DATABASE-USER-HERE
 PT_MYSQL_PASSWORD=MYSQL-PASSWORD-HERE
 PT_MYSQL_DATABASE=POWERCODE-DATABASE-NAME
 */30 * * * * /usr/bin/env bash /root/powertran-sync.sh
