@@ -88,3 +88,37 @@ class AdtranUtil:
         commands.append('exit')
 
         return commands
+
+    @staticmethod
+    def build_shaping_command(equipment: dict[str, EquipmentShapingData], device: RemoteDevice) -> list[str] | None:
+        """
+        Build the command buffer to apply shaping configuration to a given remote device
+        :param equipment: A dictionary of EquipmentShapingData objects
+        :param device: A RemoteDevice object
+        """
+        commands: list[str] = []
+
+        if device.serial_number not in equipment:
+            logger.warning(f'No equipment shaping data found for {device.serial_number}')
+            return None
+
+        esd: EquipmentShapingData = equipment[device.serial_number]
+        id_parts: list[str] = device.remote_index.split('@')
+        index: int = int(id_parts[0])
+        location: str = id_parts[1]
+        location_parts: list[str] = location.split('.')[0].split('/')
+        shelf: int = int(location_parts[0])
+        slot: int = int(location_parts[1])
+
+        logger.debug(f'Remote ID: {device.remote_index}; Serial Number: {device.serial_number}; '
+                     + f'Downstream: {esd.downstream}; Upstream: {esd.upstream}')
+
+        commands.append(f'shaper "interface gpon {index}/0/1@{location} channel 1" {device.remote_index}')
+        commands.append(f'rate {esd.downstream}')
+        commands.append('exit')
+
+        commands.append(f'shaper "remote-device {device.remote_index}_0" {shelf}/{slot}')
+        commands.append(f'rate {esd.upstream}')
+        commands.append('exit')
+
+        return commands

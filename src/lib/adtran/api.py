@@ -20,6 +20,7 @@ class AdtranAPI:
             self._device = device
             self._client_conf = {key: value for key, value in self._device.__dict__.items() if
                                  key in ['host', 'port', 'username', 'password']}
+            self._client_conf['password'] = self._device.decrypted_password
 
         if auto_connect:
             self.open()

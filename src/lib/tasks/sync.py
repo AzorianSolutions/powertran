@@ -7,27 +7,18 @@ from lib.powercode import EquipmentShapingData
 
 
 class SyncTask(Thread):
+    """ A base class for synchronizing configuration on a device. """
     ctx: Environment | None = None
-    _device: Device | None = None
-
-    @property
-    def device(self) -> Device | None:
-        """ Returns the device configuration. """
-        return self._device
-
-    @device.setter
-    def device(self, device: Device | None):
-        """ Sets the device to be used by the task. """
-        # Decrypt the device password
-        device.password = self.ctx.fernet.decrypt(device.password).decode('utf-8')
-        self._device = device
+    device: Device | None = None
 
 
 class ShapingConfigTask(SyncTask):
+    """ A task for synchronizing shaping configuration. """
     equipment: dict[str, EquipmentShapingData] | None = None
     dry_run: bool = False
 
     def run(self) -> bool:
+        """ Runs the shaping configuration synchronization task. """
 
         # Set up the Adtran API
         adtran: AdtranAPI = AdtranAPI(self.device)
@@ -42,10 +33,11 @@ class ShapingConfigTask(SyncTask):
 
 
 class DeviceSyncTask(SyncTask):
+    """ A task for synchronizing device configuration. """
     remote_devices: list[RemoteDevice] | None = None
 
     def run(self) -> bool:
-        """ Runs the task. """
+        """ Runs the remote device information synchronization task. """
 
         # Set up the Adtran API
         adtran: AdtranAPI = AdtranAPI(self.device)

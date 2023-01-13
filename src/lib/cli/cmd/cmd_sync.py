@@ -14,8 +14,11 @@ def cli(ctx: Environment, dryrun: bool):
     # Load the equipment shaping data from Powercode database
     equipment: dict[str, EquipmentShapingData] = PowercodeAPI.get_equipment_shaping_data()
 
-    # Start a synchronization task for each device
-    TaskAPI.run_sync_task(ctx, equipment, dryrun)
+    # Instantiate the task API
+    task_api: TaskAPI = TaskAPI(ctx, equipment, dryrun)
+
+    # Run the configuration synchronization task for all enabled devices
+    task_api.run_sync_task()
 
     if dryrun:
         logger.success('Shaping configuration successfully generated!')

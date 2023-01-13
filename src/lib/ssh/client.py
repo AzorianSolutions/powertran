@@ -18,8 +18,8 @@ class SSHClientManager:
     _username: str | None = None
     _password: str | None = None
     _known_hosts: str | None = None
-    _receive_delay: float = 0.1
-    _receive_wait_delay: float = 0.1
+    _receive_delay: float = 0.5
+    _receive_wait_delay: float = 0.5
 
     @property
     def channel(self) -> Channel:

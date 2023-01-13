@@ -1,3 +1,6 @@
+import os
+
+
 class Mutable:
     """ Mutable objects are objects that can be modified after creation. """
 
@@ -12,6 +15,9 @@ class Mutable:
 
     def __getattr__(self, item: str):
         """ Return the value of an attribute. """
+        if item.startswith('__') and item.endswith('__'):
+            return getattr(super(), item)
+
         if item.startswith('_'):
             item = item[1:]
         if not hasattr(self, f'_{item}'):
@@ -38,3 +44,14 @@ class Device(Mutable):
     username: str | None = None
     password: str | None = None
     enabled: bool = True
+
+    @property
+    def decrypted_password(self) -> str | None:
+        """ Return the decrypted password. """
+        from cryptography.fernet import Fernet
+
+        if not isinstance(self.password, str):
+            return None
+
+        fernet = Fernet(os.getenv('PT_SALT'))
+        return fernet.decrypt(self.password).decode('utf-8')
