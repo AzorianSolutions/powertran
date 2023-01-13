@@ -14,11 +14,32 @@ if [ "$PARENT_DIRECTORY" == 'bin' ]; then
   cd "$CURRENT_PATH/.."
 fi
 
+# Install build-essential package if not already installed
+if [ "$(dpkg -l | awk '/build-essential/ {print }'|wc -l)" -lt 1 ]; then
+  $CMD_PREFIX apt update && $CMD_PREFIX apt install -y build-essential
+else
+  echo "Skipping build-essential installation, already installed."
+fi
+
+# Install MySQL Client development libraries package if not already installed
+if [ "$(dpkg -l | awk '/libmysqlclient-dev/ {print }'|wc -l)" -lt 1 ]; then
+  $CMD_PREFIX apt update && $CMD_PREFIX apt install -y libmysqlclient-dev
+else
+  echo "Skipping MySQL Client development libraries installation, already installed."
+fi
+
 # Install Python3 if not already installed
 if [ "$(dpkg -l | awk '/python3/ {print }'|wc -l)" -lt 1 ]; then
   $CMD_PREFIX apt update && $CMD_PREFIX apt install -y python3
 else
   echo "Skipping Python3 installation, already installed."
+fi
+
+# Install Python3 dev package if not already installed
+if [ "$(dpkg -l | awk '/python3-dev/ {print }'|wc -l)" -lt 1 ]; then
+  $CMD_PREFIX apt update && $CMD_PREFIX apt install -y python3-dev
+else
+  echo "Skipping Python3 dev installation, already installed."
 fi
 
 # Install Python3 venv package if not already installed
