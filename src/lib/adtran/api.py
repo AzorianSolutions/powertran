@@ -1,4 +1,5 @@
 from loguru import logger
+from paramiko.ssh_exception import SSHException
 from lib.adtran.mutables import RemoteDevice
 from lib.adtran.util import AdtranUtil
 from lib.mutables import Device
@@ -15,6 +16,8 @@ class AdtranAPI:
 
     def __init__(self, device: Device | None = None, auto_connect: bool = True):
         """ Initialize the AdtranAPI object. """
+        import random
+        import time
 
         if isinstance(device, Device):
             self._device = device
@@ -23,12 +26,18 @@ class AdtranAPI:
             self._client_conf['password'] = self._device.decrypted_password
 
         if auto_connect:
-            self.open()
+            while not self.open():
+                time.sleep(random.randint(5, 15))
 
-    def open(self):
+    def open(self) -> bool:
         """ Open an SSH connection to the device. """
         if not isinstance(self._client, SSHClientManager):
-            self._client = SSHClientManager(**self._client_conf, auto_connect=True)
+            try:
+                self._client = SSHClientManager(**self._client_conf, auto_connect=True)
+                return True
+            except SSHException as e:
+                logger.error(f'Failed to connect to device {self._device.host} due to error: {e}')
+                return False
 
     def close(self):
         """ Close the SSH connection to the device. """

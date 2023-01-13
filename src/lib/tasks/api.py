@@ -114,13 +114,16 @@ class TaskAPI:
 
     def queue_worker(self, host: str, command_set: list[str]):
         """ Worker function for the shaping configuration queue. """
+        import random
+        import time
 
         # Instantiate an API for each managed device if not already setup
         if not len(self._apis) == len(self.ctx.devices):
             for device in self.ctx.devices:
                 if device.host not in self._apis:
+                    time.sleep(random.randint(3, 10))
                     self._apis[device.host] = AdtranAPI(device)
-                    self._apis[device.host].execute(['enable', 'configure t'])
+                    self._apis[device.host].execute(['enable', 'config t'])
 
         # Update the shaping configuration on the Adtran device
         self._apis[host].execute(command_set, self.dry_run)

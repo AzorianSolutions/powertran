@@ -104,7 +104,7 @@ class SSHClientManager:
             # Encode the command
             encoded_command: bytes = f'{command}\n'.encode('utf-8')
 
-            logger.debug(f'Sending {len(encoded_command)} byte command: {command}')
+            logger.debug(f'Sending {len(encoded_command)} byte command to host {self._host}: {command}')
 
             # Send the command
             self.channel.send(encoded_command)
