@@ -66,14 +66,25 @@ Now you need to edit the following command block so that the environment variabl
 for your environment.
 
 ```
-read -r -d '' PT_CRON <<'EOF'
+read -r -d '' PT_ENV <<'EOF'
 PT_SALT="YOUR-APP-GENERATED-SALT-HERE"
 PT_CONFIG=/root/powertran.yml
 PT_MYSQL_HOST=YOUR-POWERCODE-DATABASE-HOST-HERE
 PT_MYSQL_USER=YOUR-POWERCODE-DATABASE-USER-HERE
 PT_MYSQL_PASSWORD=MYSQL-PASSWORD-HERE
 PT_MYSQL_DATABASE=POWERCODE-DATABASE-NAME
-*/30 * * * * /usr/bin/env bash /root/powertran-sync.sh
+EOF
+```
+
+Once you have finished editing the previous block of environment variables, copy and run the entire block as a command.
+
+The next step is to execute the following commands:
+
+```
+echo "$PT_ENV" >> /root/.profile
+
+read -r -d '' PT_CRON <<'EOF'
+*/30 * * * * BASH_ENV=/root/.profile /usr/bin/env bash /root/powertran-sync.sh
 EOF
 
 (crontab -l && echo "$PT_CRON") | crontab -
