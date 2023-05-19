@@ -92,8 +92,12 @@ class AdtranUtil:
         shelf: int = int(location_parts[0])
         slot: int = int(location_parts[1])
 
+        if esd.status != 'Active':
+            esd.downstream = 1
+            esd.upstream = 1
+
         logger.debug(f'Remote ID: {device.remote_index}; Serial Number: {device.serial_number}; '
-                     + f'Downstream: {esd.downstream}; Upstream: {esd.upstream}')
+                     + f'Downstream: {esd.downstream}; Upstream: {esd.upstream}; Status: {esd.status};')
 
         commands.append(f'shaper "interface gpon {index}/0/1@{location} channel 1" {device.remote_index}')
         commands.append(f'rate {esd.downstream}')

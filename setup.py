@@ -16,6 +16,7 @@ setup(
         'mysqlclient==2.1.1',
         'pyaml==21.10.1',
         'cryptography==39.0.0',
+        'ncclient==0.6.13',
     ],
     entry_points={
         'console_scripts': [

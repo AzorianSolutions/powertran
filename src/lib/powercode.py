@@ -9,6 +9,7 @@ class EquipmentShapingData(Mutable):
     _serial: str = None
     _downstream: int = None
     _upstream: int = None
+    _status: str = None
 
 
 class PowercodeAPI:
