@@ -93,8 +93,8 @@ class AdtranUtil:
         slot: int = int(location_parts[1])
 
         if esd.status != 'Active':
-            esd.downstream = 1
-            esd.upstream = 1
+            esd.downstream = 64
+            esd.upstream = 64
 
         logger.debug(f'Remote ID: {device.remote_index}; Serial Number: {device.serial_number}; '
                      + f'Downstream: {esd.downstream}; Upstream: {esd.upstream}; Status: {esd.status};')
